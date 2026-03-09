@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_b99a27af61936b4ad597a43ef8c74edb {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_b99a27af61936b4ad597a43ef8c74edb" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_b99a27af61936b4ad597a43ef8c74edb = L.map(
+                "map_b99a27af61936b4ad597a43ef8c74edb",
+                {
+                    center: [10.682, -73.327],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 10,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_2c6d793f9954930ec58be7cd0113eebb = L.tileLayer(
+                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                {
+  "minZoom": 0,
+  "maxZoom": 18,
+  "maxNativeZoom": 18,
+  "noWrap": false,
+  "attribution": "Esri",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_2c6d793f9954930ec58be7cd0113eebb.addTo(map_b99a27af61936b4ad597a43ef8c74edb);
+        
+    
+            var tile_layer_dda89faa35475a8934839f544740fbcc = L.tileLayer(
+                "https://earthengine.googleapis.com/v1/projects/finca-489704/maps/2834d2092087f6c8774c76ed464c32ba-aef140a04fd63b3ecd75a706c60dad07/tiles/{z}/{x}/{y}",
+                {
+  "minZoom": 0,
+  "maxZoom": 18,
+  "maxNativeZoom": 18,
+  "noWrap": false,
+  "attribution": "Map Data \u0026copy; \u003ca href=\"https://earthengine.google.com/\"\u003eGoogle Earth Engine\u003c/a\u003e",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_dda89faa35475a8934839f544740fbcc.addTo(map_b99a27af61936b4ad597a43ef8c74edb);
+        
+    
+            var marker_3e0f05ba1a6d9f96969bb33b0417ec5c = L.marker(
+                [10.682, -73.327],
+                {
+}
+            ).addTo(map_b99a27af61936b4ad597a43ef8c74edb);
+        
+    
+            var icon_239c0dcb64794e704e404b5521919eee = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_7acc3a611cc181d70aa565110f3f28e9 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d03612e434017f0547d25a54e838dd46 = $(`<div id="html_d03612e434017f0547d25a54e838dd46" style="width: 100.0%; height: 100.0%;">Ubicación Finca</div>`)[0];
+                popup_7acc3a611cc181d70aa565110f3f28e9.setContent(html_d03612e434017f0547d25a54e838dd46);
+            
+        
+
+        marker_3e0f05ba1a6d9f96969bb33b0417ec5c.bindPopup(popup_7acc3a611cc181d70aa565110f3f28e9)
+        ;
+
+        
+    
+    
+                marker_3e0f05ba1a6d9f96969bb33b0417ec5c.setIcon(icon_239c0dcb64794e704e404b5521919eee);
+            
+    
+            var layer_control_61360efc4ecdd53aed18a96733545ee7_layers = {
+                base_layers : {
+                    "https://server.arcgisonline.com/arcgis/rest/services/world_imagery/mapserver/tile/{z}/{y}/{x}" : tile_layer_2c6d793f9954930ec58be7cd0113eebb,
+                },
+                overlays :  {
+                    "Elevaci\u00f3n del Terreno" : tile_layer_dda89faa35475a8934839f544740fbcc,
+                },
+            };
+            let layer_control_61360efc4ecdd53aed18a96733545ee7 = L.control.layers(
+                layer_control_61360efc4ecdd53aed18a96733545ee7_layers.base_layers,
+                layer_control_61360efc4ecdd53aed18a96733545ee7_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": true,
+  "autoZIndex": true,
+}
+            ).addTo(map_b99a27af61936b4ad597a43ef8c74edb);
+
+        
+</script>
+</html>
