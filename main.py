@@ -1,17 +1,26 @@
 import ee
 import folium
 import os
+import google.auth
 
 print("Conectando con Google Earth Engine...")
 
-# Forma estándar y compatible para conectar tanto en tu PC como en la nube
 try:
-    # Quitamos el 'use_cloud_api' que causó el error
-    ee.Initialize(project='finca-489704')
+    # Verificamos si estamos en la nube (GitHub Actions)
+    if 'GITHUB_ACTIONS' in os.environ:
+        print("Entorno de GitHub Actions detectado. Extrayendo llave del robot...")
+        # Tomamos las credenciales inyectadas por GitHub
+        credentials, project_id = google.auth.default()
+        # Le pasamos las credenciales explícitamente a Earth Engine
+        ee.Initialize(credentials, project='finca-489704')
+    else:
+        print("Entorno local detectado. Usando sesión de navegador...")
+        # En tu PC seguimos usando tu inicio de sesión normal
+        ee.Initialize(project='finca-489704')
+        
     print("¡Conexión exitosa!")
 except Exception as e:
     print(f"Error de conexión: {e}")
-    # Si esto falla aquí, es por el registro del correo del robot
     raise
 
 # 1. Definimos una función puente para conectar Earth Engine con Folium

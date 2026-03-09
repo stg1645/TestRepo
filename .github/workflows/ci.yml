@@ -22,7 +22,7 @@ jobs:
     - name: Instalar dependencias
       run: |
         python -m pip install --upgrade pip
-        pip install earthengine-api folium
+        pip install earthengine-api folium google-auth
         
     - name: Autenticación con Google Cloud
       uses: google-github-actions/auth@v2
