@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [ "main" ]
 
-# --- PERMISOS NECESARIOS PARA ESCRIBIR EN GITHUB PAGES ---
 permissions:
   contents: write
 
@@ -38,10 +37,16 @@ jobs:
         python main.py
         echo "¡El código se ejecutó en la nube correctamente!"
 
-    # --- NUEVO PASO PARA PUBLICAR EL MAPA ---
+    # --- MOVEMOS EL MAPA A UNA CARPETA AISLADA Y SEGURA ---
+    - name: Preparar carpeta pública
+      run: |
+        mkdir public
+        mv mapa_finca.html public/
+
+    # --- PUBLICAMOS SOLO ESA CARPETA ---
     - name: Publicar en GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./
+        publish_dir: ./public
         publish_branch: gh-pages
