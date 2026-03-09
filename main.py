@@ -1,9 +1,18 @@
 import ee
 import folium
+import os
 
 print("Conectando con Google Earth Engine...")
-# Asegúrate de usar tu ID de proyecto real aquí
-ee.Initialize(project='finca-489704')
+
+# Verificamos si estamos en GitHub Actions
+if 'GITHUB_ACTIONS' in os.environ:
+    # Usamos la inicialización especial para robots (Service Accounts)
+    # No necesita abrir navegador porque ya tiene el secreto GCP_SA_KEY
+    ee.Initialize(project='finca-489704', use_cloud_api=True)
+else:
+    # Esto es para cuando lo corres en tu computadora
+    ee.Initialize(project='finca-489704')
+
 print("¡Conexión exitosa!")
 
 # 1. Definimos una función puente para conectar Earth Engine con Folium
