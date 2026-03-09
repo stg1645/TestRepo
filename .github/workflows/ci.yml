@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+# --- PERMISOS NECESARIOS PARA ESCRIBIR EN GITHUB PAGES ---
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -33,6 +37,7 @@ jobs:
       run: |
         python main.py
         echo "¡El código se ejecutó en la nube correctamente!"
+
     # --- NUEVO PASO PARA PUBLICAR EL MAPA ---
     - name: Publicar en GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
