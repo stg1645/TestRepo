@@ -4,16 +4,15 @@ import os
 
 print("Conectando con Google Earth Engine...")
 
-# Verificamos si estamos en GitHub Actions
-if 'GITHUB_ACTIONS' in os.environ:
-    # Usamos la inicialización especial para robots (Service Accounts)
-    # No necesita abrir navegador porque ya tiene el secreto GCP_SA_KEY
-    ee.Initialize(project='finca-489704', use_cloud_api=True)
-else:
-    # Esto es para cuando lo corres en tu computadora
+# Forma estándar y compatible para conectar tanto en tu PC como en la nube
+try:
+    # Quitamos el 'use_cloud_api' que causó el error
     ee.Initialize(project='finca-489704')
-
-print("¡Conexión exitosa!")
+    print("¡Conexión exitosa!")
+except Exception as e:
+    print(f"Error de conexión: {e}")
+    # Si esto falla aquí, es por el registro del correo del robot
+    raise
 
 # 1. Definimos una función puente para conectar Earth Engine con Folium
 def add_ee_layer(self, ee_image_object, vis_params, name):
