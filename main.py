@@ -6,16 +6,19 @@ import google.auth
 print("Conectando con Google Earth Engine...")
 
 try:
-    # Verificamos si estamos en la nube (GitHub Actions)
     if 'GITHUB_ACTIONS' in os.environ:
-        print("Entorno de GitHub Actions detectado. Extrayendo llave del robot...")
-        # Tomamos las credenciales inyectadas por GitHub
-        credentials, project_id = google.auth.default()
-        # Le pasamos las credenciales explícitamente a Earth Engine
+        print("Entorno de GitHub Actions detectado. Extrayendo llave del robot y definiendo scopes...")
+        
+        # Le decimos a Google exactamente qué puertas queremos abrir con esta llave
+        scopes = [
+            'https://www.googleapis.com/auth/earthengine',
+            'https://www.googleapis.com/auth/cloud-platform'
+        ]
+        credentials, project_id = google.auth.default(scopes=scopes)
+        
         ee.Initialize(credentials, project='finca-489704')
     else:
         print("Entorno local detectado. Usando sesión de navegador...")
-        # En tu PC seguimos usando tu inicio de sesión normal
         ee.Initialize(project='finca-489704')
         
     print("¡Conexión exitosa!")
