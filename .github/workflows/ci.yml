@@ -45,8 +45,8 @@ jobs:
       run: |
         mkdir public
         mv mapa_finca.html public/index.html
-        mv historico_lluvias.csv public/
-
+        mv historico_clima_finca.csv public/
+        
     - name: Publicar en GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
