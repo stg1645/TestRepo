@@ -5,6 +5,9 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  schedule:
+    # Este código significa: Ejecutar todos los lunes a las 00:00 UTC (domingo por la noche en Colombia)
+    - cron: '0 0 * * 1'
 
 permissions:
   contents: write
