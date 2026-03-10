@@ -37,13 +37,13 @@ jobs:
         python main.py
         echo "¡El código se ejecutó en la nube correctamente!"
 
-    # --- MOVEMOS EL MAPA A UNA CARPETA AISLADA Y SEGURA ---
+    # --- AQUÍ ASEGURAMOS QUE AMBOS ARCHIVOS SE VAYAN A LA CARPETA PÚBLICA ---
     - name: Preparar carpeta pública
       run: |
         mkdir public
-        mv mapa_finca.html public/
+        mv mapa_finca.html public/index.html
+        mv historico_lluvias.csv public/
 
-    # --- PUBLICAMOS SOLO ESA CARPETA ---
     - name: Publicar en GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
