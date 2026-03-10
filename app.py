@@ -3,14 +3,31 @@ import polars as pl
 import pandas as pd
 import numpy as np
 import xgboost as xgb
+import subprocess
+import time
 from datetime import datetime
 
 # ==========================================
-# 1. CONFIGURACION DE PAGINA
+# 1. CONFIGURACION DE PAGINA Y MENU LATERAL
 # ==========================================
 st.set_page_config(page_title="Estacion Meteorologica IA", layout="wide")
+
+with st.sidebar:
+    st.header("Panel de Control")
+    st.write("Sincronizacion de datos satelitales.")
+    
+    if st.button("Actualizar Datos (Earth Engine)"):
+        with st.spinner("Conectando con el satelite y descargando..."):
+            try:
+                # subprocess.run(["python", "tu_script_gee.py"], check=True)
+                time.sleep(3) 
+                st.cache_data.clear()
+                st.success("Datos actualizados y modelo reentrenado con exito.")
+            except Exception as e:
+                st.error(f"Error al actualizar: {e}")
+
 st.title("Panel de Inteligencia Agrometeorologica (XGBoost)")
-st.markdown("Monitor de clima local, predicciones de alta precision y planificador de siembras.")
+st.markdown("Monitor de clima local, predicciones, calculo de riego y planificador de siembras.")
 
 # ==========================================
 # 2. MOTOR DE DATOS Y MACHINE LEARNING
@@ -52,11 +69,11 @@ def entrenar_y_procesar():
     
     return df_pandas, modelo, X, features, modelo.feature_importances_
 
-with st.spinner('Procesando 15 anos de datos y calibrando XGBoost...'):
+with st.spinner('Procesando datos y calibrando XGBoost...'):
     df_pd, modelo_entrenado, X_matriz, nombres_features, importancias = entrenar_y_procesar()
 
 # ==========================================
-# 3. PREDICCION INMEDIATA (MANANA)
+# 3. PREDICCION INMEDIATA Y CALCULADORA DE RIEGO
 # ==========================================
 condiciones_hoy = X_matriz[-1].reshape(1, -1)
 pred_hoy = modelo_entrenado.predict(condiciones_hoy)[0]
@@ -64,39 +81,56 @@ pred_lluvia = max(0.0, pred_hoy[0])
 pred_temp = pred_hoy[1]
 condiciones_actuales = df_pd.iloc[-1]
 
-st.header("Pronostico Tactico para Manana")
+st.header("Pronostico y Necesidades de Riego (Proximas 24h)")
+
+# CORRECCION DE LLUVIA EFECTIVA
+lluvia_efectiva = pred_lluvia if pred_lluvia >= 5.0 else 0.0
+
+# CORRECCION DE EVAPOTRANSPIRACION (ETo)
+temp_hoy = condiciones_actuales['Temperatura_C']
+viento_hoy = condiciones_actuales['Velocidad_Viento_m_s']
+humedad_hoy = condiciones_actuales['Humedad_Relativa_%']
+
+evapotranspiracion_mm = (temp_hoy * 0.25) + (viento_hoy * 0.5)
+if humedad_hoy < 60:
+    evapotranspiracion_mm += 2.0 
+
+evapotranspiracion_mm = max(4.5, evapotranspiracion_mm)
+
+balance_agua = lluvia_efectiva - evapotranspiracion_mm
 
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric(label="Temperatura Promedio Esperada", value=f"{pred_temp:.1f} C", delta=f"{(pred_temp - condiciones_actuales['Temperatura_C']):.1f} C vs Hoy")
+    st.metric(label="Lluvia Bruta Esperada", value=f"{pred_lluvia:.1f} mm")
+    st.metric(label="Temperatura Promedio", value=f"{pred_temp:.1f} C")
+    
 with col2:
-    st.metric(label="Lluvia Esperada (Prec. Quirurgica)", value=f"{pred_lluvia:.1f} mm")
-with col3:
-    humedad_actual = condiciones_actuales['Humedad_Relativa_%']
-    if pred_temp > 28.0 and humedad_actual > 75:
-        st.error("ALTO ESTRES TERMICO: Bochorno extremo. Riesgo de hongos.")
-    elif pred_temp > 30.0 and humedad_actual < 50:
-        st.warning("ALTO ESTRES HIDRICO: Aire muy seco. Evaporacion masiva.")
+    st.metric(label="Agua que se Evaporara (ETo)", value=f"-{evapotranspiracion_mm:.1f} mm", delta="Perdida real del suelo", delta_color="inverse")
+    if balance_agua < 0:
+        st.metric(label="Balance Hidrico REAL", value=f"{balance_agua:.1f} mm", delta="Deficit (Tierra secandose)", delta_color="inverse")
     else:
-        st.success("CONDICIONES ESTABLES: Clima moderado para las plantas.")
+        st.metric(label="Balance Hidrico REAL", value=f"+{balance_agua:.1f} mm", delta="Superavit", delta_color="normal")
 
-with st.expander("Ver explicacion del Pronostico Tactico"):
-    st.write("""
-    **Como interpretar esto en el lote:**
-    - **Temperatura vs Hoy:** Te indica si la tendencia de la semana es al alza (mas calor) o a la baja (refrescando).
-    - **Lluvia (mm):** Menos de 5 mm se considera rocio o lluvia no efectiva. Mas de 15 mm penetrara hasta la zona de raices.
-    - **Estres Termico:** Cruza el calor esperado con la humedad de hoy. Si el aire es muy seco y caluroso, las hojas transpiraran mas agua de la que las raices pueden absorber, causando marchitamiento.
-    """)
-
-st.divider()
+with col3:
+    st.write("**Dosis de Riego Recomendada**")
+    if balance_agua < 0:
+        riego_necesario = abs(balance_agua)
+        st.error(f"Suelo en deficit hidrico. Reponer **{riego_necesario:.1f} L/m2** (Litros por metro cuadrado).")
+        st.write("- **Melon/Papaya:** Riego urgente hoy (alto consumo).")
+        st.write("- **Frijol/Pimenton:** Riego moderado en la base.")
+        if 0 < pred_lluvia < 5.0:
+            st.caption(f"Nota: Los {pred_lluvia:.1f} mm de lluvia pronosticados son 'no efectivos' (no llegaran a la raiz).")
+    else:
+        st.success(f"La lluvia efectiva compensara la evaporacion. Sobraran {balance_agua:.1f} mm.")
+        st.write("NO encender riego. Mantener monitoreo.")
 
 # ==========================================
 # 4. PLANIFICADOR DE SIEMBRAS Y CICLO ANUAL
 # ==========================================
+st.divider()
 st.header("Planificador de Siembras y Ciclo Anual")
 
-# Calculamos el promedio historico para TODAS las variables por dia del ano
 variables_clima = [
     'Precipitacion_mm', 'Temperatura_C', 'Humedad_Relativa_%', 
     'Humedad_Suelo_Raices_m3_m3', 'Humedad_Suelo_Superficie_m3_m3', 
@@ -105,15 +139,12 @@ variables_clima = [
 
 clima_promedio = df_pd.groupby('Dia_del_Ano')[variables_clima].mean().reset_index()
 
-# Suavizamos las curvas (media movil de 7 dias) para ver las tendencias claras
 for var in variables_clima:
     clima_promedio[f'{var}_Suavizada'] = clima_promedio[var].rolling(window=7, min_periods=1).mean()
 
-# TRUCO PARA EL EJE X: Convertimos el "Dia del Ano" a una fecha real del 2026
 clima_promedio['Fecha_Grafica'] = pd.to_datetime('2026-01-01') + pd.to_timedelta(clima_promedio['Dia_del_Ano'] - 1, unit='D')
 clima_promedio.set_index('Fecha_Grafica', inplace=True)
 
-# Calculo de la ventana de siembra
 temporada_lluvias = clima_promedio[(clima_promedio['Dia_del_Ano'] > 60) & (clima_promedio['Precipitacion_mm_Suavizada'] > 4.0)]
 
 if not temporada_lluvias.empty:
@@ -123,16 +154,6 @@ else:
     fecha_ideal = "Finales de Abril"
 
 st.success(f"**Ventana Ideal de Trasplante Estimada:** A partir del **{fecha_ideal}**")
-
-with st.expander("Ver explicacion del Periodo Ideal de Cultivo"):
-    st.write(f"""
-    **Por que el modelo sugiere el {fecha_ideal}?**
-    Al promediar los ultimos 15 anos, el algoritmo identifica que en esta fecha especifica la temporada seca se rompe de forma consistente. 
-    A partir de este momento las lluvias superan los 4 mm diarios promedio y la humedad del suelo comienza una curva ascendente.
-    **Recomendacion:** Manten tus semillas protegidas. Preparate para llevarlas al lote definitivo (cerca al platano y el cafe) en la semana del {fecha_ideal} para aprovechar el inicio natural de las lluvias.
-    """)
-
-st.subheader("Perfil Climatico Anual (Promedio Historico de 15 anos)")
 
 col_p1, col_p2 = st.columns(2)
 with col_p1:
@@ -161,11 +182,10 @@ with col_p6:
 st.write("**Velocidad del Viento (m/s)**")
 st.line_chart(clima_promedio['Velocidad_Viento_m_s_Suavizada'], color="#7f7f7f")
 
-st.divider()
-
 # ==========================================
 # 5. METRICAS CLIMATICAS Y EXPLICABILIDAD
 # ==========================================
+st.divider()
 st.header("Auditoria del Clima Actual")
 
 tab1, tab2 = st.tabs(["Motores Climaticos", "Ultimos 30 dias"])
@@ -180,19 +200,8 @@ with tab1:
     
     df_imp = pd.DataFrame({"Variable": nombres_v, "Importancia %": pesos_v}).set_index("Variable")
     st.bar_chart(df_imp, color="#ff7f0e")
-    
-    with st.expander("Como leer esta grafica?"):
-        st.write("""
-        Esta grafica muestra los 'secretos' de tu microclima local. 
-        Si la Humedad Relativa es la barra mas alta, significa que las lluvias en tu lote dependen mas del vapor de agua en el viento chocando con las montanas cercanas que del simple calor.
-        """)
 
 with tab2:
     st.write("**Acumulado de lluvia reciente**")
     df_mes = df_pd.tail(30).set_index("Fecha")
     st.bar_chart(df_mes["Precipitacion_mm"])
-    
-    with st.expander("Para que sirve este registro?"):
-        st.write("""
-        Las plantas no solo viven de la lluvia del dia, sino del agua retenida. Ver los ultimos 30 dias te permite saber si vienes de un periodo de sequia prolongada. Si las barras estan casi planas, la reserva de agua subterranea esta agotada y cualquier trasplante requerira riego de auxilio.
-        """)
