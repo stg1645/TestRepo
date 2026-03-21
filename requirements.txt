@@ -1,0 +1,9 @@
+streamlit
+polars
+pandas
+numpy
+xgboost
+folium
+streamlit-folium
+earthengine-api
+google-auth
